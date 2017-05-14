@@ -47,6 +47,7 @@
     <Compile Include="Models\CandyBar.cs" />
     <Compile Include="Models\Drink.cs" />
     <Compile Include="Models\Product.cs" />
+    <Compile Include="Models\Transaction.cs" />
     <Compile Include="ProductGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
