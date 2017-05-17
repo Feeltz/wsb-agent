@@ -1,48 +1,128 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace wsb
 {
     public static class ProductGenerator
     {
+        public static string[] candyBars = File.ReadAllLines("..\\..\\candybars.txt");
+        public static string[] snacks = File.ReadAllLines("..\\..\\snacks.txt");
+        public static string[] softdrinks = File.ReadAllLines("..\\..\\softdrinks.txt");
+        public static string[] streets = File.ReadAllLines("..\\..\\ulice.txt");
+        public static string[] barTastes = { "Czekoladowy", "Kokosowy", "Waniliowy", "Orzechowy" };
+        public static string[] snackTastes = { "Solone", "Paprykowe", "Cebulowe", "Salsa" };
+
         public static Product GetSnickers()
         {
             var snickers = new CandyBar();
             snickers.Name = "Snickers";
             snickers.Price = 2.50f;
-            snickers.Producer = "Mars";
             snickers.Taste = "Klasyczny";
             snickers.Code = "SnickersRegular";
-
+            
             return snickers;
         }
 
-        public static Product GetCisowiankaStill()
+        //public static Product GetCisowiankaStill()
+        //{
+        //    var cisowianka = new Drink()
+        //    {
+        //        Name = "Cisowianka",
+        //        DrinkType = DrinkType.StillWater,
+        //        Price = 2.0f,
+        //        Code = "CisowiankaStill"
+        //    };
+        //    return cisowianka;
+        //}
+
+        //public static Product GetLajkonikSalted()
+        //{
+        //    var paluszki = new Snack()
+        //    {
+        //        Name = "Paluszki",
+        //        SnackType = SnackType.Breadsticks,
+        //        Price = 5.0f,
+        //        Taste = "Solone",
+        //        Code = "LajkonikSolone"
+        //    };
+        //    return paluszki;
+        //}
+
+        private static string GenerateCode()
         {
-            var cisowianka = new Drink() {
-                Name = "Cisowianka",
-                Producer = "Cisowianka",
-                DrinkType = DrinkType.StillWater,
-                Price = 2.0f,
-                Code = "CisowiankaStill" };
-            return cisowianka;
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var stringChars = new char[12];
+            var random = new Random(Guid.NewGuid().GetHashCode());
+
+            for ( int i = 0; i < stringChars.Length; i++ )
+            {
+                stringChars[i] = chars[random.Next(chars.Length)];
+            }
+
+            return new String(stringChars);
         }
 
-        public static Product GetLajkonikSalted()
+        public static VendingMachine Generate()
         {
-            var paluszki = new Snack()
+            Random rnd = new Random(Guid.NewGuid().GetHashCode());
+            int slotCount = rnd.Next(15, 45);
+            while ( slotCount % 3 != 0 )
+                slotCount = rnd.Next(15, 45);
+
+            VendingMachine tmp = new VendingMachine(slotCount);
+            tmp.Code = GenerateCode();
+            tmp.Adress = streets[rnd.Next(0, streets.Length)] + " " + rnd.Next(1, 100);
+            tmp.Type = (VendingMachineType)( rnd.Next(0, 3) );
+            tmp.SlotDepthness = rnd.Next(10, 60);
+
+            for ( int i = 0; i < slotCount / 3; i++ )
             {
-                Name = "Paluszki",
-                Producer = "Lajkonik",
-                SnackType = SnackType.Breadsticks,
-                Price = 5.0f,
-                Taste = "Solone",
-                Code = "LajkonikSolone"
-            };
-            return paluszki;
+                CandyBar candy = new CandyBar();
+                candy.Name = candyBars[rnd.Next(0, candyBars.Length)];
+                candy.Price = (float)( ( rnd.NextDouble() + 0.5 ) * rnd.Next(2, 6) );
+                candy.Price = (float)Math.Round(candy.Price, 2);
+                candy.Taste = barTastes[rnd.Next(0, barTastes.Length)];
+                candy.Code = GenerateCode();
+
+                for ( int j = 0; j < tmp.SlotDepthness; j++ )
+                {
+                    tmp.Slots[i].Push(candy);
+                }
+                
+            }
+
+            for ( int i = slotCount / 3; i < ( slotCount / 3 ) * 2; i++ )
+            {
+                Snack snack = new Snack();
+                snack.Name = snacks[rnd.Next(0, snacks.Length)];
+                snack.Price = (float)( ( rnd.NextDouble() + 0.5 ) * rnd.Next(2, 6) );
+                snack.Price = (float)Math.Round(snack.Price, 2);
+                snack.Taste = snackTastes[rnd.Next(0, snackTastes.Length)];
+                snack.SnackType = (SnackType)rnd.Next(0, 3);
+                snack.Code = GenerateCode();
+
+                for ( int j = 0; j < tmp.SlotDepthness; j++ )
+                {
+                    tmp.Slots[i].Push(snack);
+                }
+            }
+
+            for ( int i = ( slotCount / 3 ) * 2; i < slotCount; i++ )
+            {
+                Drink drink = new Drink();
+                drink.Name = softdrinks[rnd.Next(0, softdrinks.Length)];
+                drink.Price = (float)( ( rnd.NextDouble() + 0.5 ) * rnd.Next(2, 6) );
+                drink.Price = (float)Math.Round(drink.Price, 2);
+                drink.DrinkType = (DrinkType)rnd.Next(0, 4);
+                drink.Code = GenerateCode();
+
+                for ( int j = 0; j < tmp.SlotDepthness; j++ )
+                {
+                    tmp.Slots[i].Push(drink);
+                }
+            }
+
+            return tmp;
         }
     }
 }

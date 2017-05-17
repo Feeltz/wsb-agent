@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace wsb
 {
-
+    [System.Serializable]
     public class VendingMachine
     {
         // unikatowy kod maszyny
@@ -12,7 +12,6 @@ namespace wsb
         // adres miejsca gidze jest postawiona
         public string Adress { get; set; }
 
-        public string Producent { get; set; }
         public VendingMachineType Type { get; set; }
 
         // ilosc miejsc na produkty, np jak ma 10 to moze byc 5 batonikow i 5 roznych napoi
@@ -20,6 +19,7 @@ namespace wsb
 
         // ile miesci sie produktow w jednym slocie
         public int SlotDepthness { get; set; }
+        public bool IsWorking { get; set; } = true;
 
         public Stack<Product>[] Slots { get; set; }
         public List<Transaction> transactionList;
@@ -70,23 +70,48 @@ namespace wsb
 
         public void BuyProduct(int productCode)
         {
-            if ( Slots[productCode].Count != 0 )
+            if ( IsWorking )
             {
-                Slots[productCode].Pop();
-                transactionList.Add(new Transaction(productCode, DateTime.Now));
+                if ( Slots[productCode].Count != 0 )
+                {
+                    Console.WriteLine("Zakupiono " + Slots[productCode].Peek().Name + " za " + Slots[productCode].Peek().Price + " zł" + " Zostało " + (Slots[productCode].Count-1) + "/" + SlotDepthness);
 
-                if ( Slots[productCode].Count <= SlotDepthness / 10 )
-                    SendWarning("10% warning");
+                    Slots[productCode].Pop();
+                    transactionList.Add(new Transaction(productCode, DateTime.Now));
+                }
+
+                CheckSlot(productCode);
             }
-            else
-                SendWarning("empty");
-
+            // kod błedu: maszyna nie działa
+            else SendErrorCode(-1);
         }
 
-        public void SendWarning(string Type)
+
+        void CheckSlot(int productCode)
+        {
+            if ( Slots[productCode].Count <= SlotDepthness / 10 && Slots[productCode].Count > 0)
+                // kod błedu: mniej niz 10% produktu
+                SendErrorCode(5);
+            else if ( Slots[productCode].Count == 0)
+                // kod błedu: produtku nie ma
+                SendErrorCode(10);
+
+            IsWorking = RandomBreakChance();   
+        }
+
+        bool RandomBreakChance()
+        {
+            Random rnd = new Random();
+            if ( rnd.Next(1, 1000) == 2 )
+                return false;
+            return true;
+        }
+
+        public void SendErrorCode(int errCode)
         {
             //TODO: Wysłanie do serwera ostrzeżenia
             //Oproznienie cache transakcji, przy okazji
+            Console.WriteLine("Wysłano Kod Błędu => " + errCode + " " + Adress + " " + Code);
             EmptyTransactionChache();
         }
 
