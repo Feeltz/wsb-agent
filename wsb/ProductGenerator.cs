@@ -59,7 +59,7 @@ namespace wsb
                 stringChars[i] = chars[random.Next(chars.Length)];
             }
 
-            return new String(stringChars);
+            return new string(stringChars);
         }
 
         public static VendingMachine Generate()

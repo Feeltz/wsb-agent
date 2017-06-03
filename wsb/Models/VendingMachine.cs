@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace wsb
 {
@@ -16,6 +17,7 @@ namespace wsb
 
         // ilosc miejsc na produkty, np jak ma 10 to moze byc 5 batonikow i 5 roznych napoi
         public int NumberOfSlots { get; set; }
+        public List<int> SlotsToRefill = new List<int>();
 
         // ile miesci sie produktow w jednym slocie
         public int SlotDepthness { get; set; }
@@ -44,6 +46,23 @@ namespace wsb
         {
             this.Slots = new List<Product>();
             transactionList = new List<Transaction>();
+            System.Threading.Thread.Sleep(500);
+        }
+
+        public void FillProduct(int productCode)
+        {
+            Slots[productCode].Count = SlotDepthness;
+        }
+
+        public void RefillMissingProducts()
+        {
+            foreach ( int slot in SlotsToRefill )
+            {
+                FillProduct(slot);
+                Console.WriteLine("Uzupełniono slot nr: " + slot);
+            }
+            
+            SlotsToRefill.Clear();
         }
 
 
@@ -68,13 +87,22 @@ namespace wsb
 
         void CheckSlot(int productCode)
         {
-            if ( Slots[productCode].Count <= SlotDepthness / 10 && Slots[productCode].Count > 0)
+            if ( Slots[productCode].Count <= SlotDepthness / 10 && Slots[productCode].Count > 0 )
+            {
                 // kod błedu: mniej niz 10% produktu
                 SendErrorCode(5);
-            else if ( Slots[productCode].Count == 0)
+                if ( !SlotsToRefill.Contains(productCode) )
+                    SlotsToRefill.Add(productCode);
+            }
+            else if ( Slots[productCode].Count == 0 )
                 // kod błedu: produtku nie ma
                 SendErrorCode(10);
 
+            if (SlotsToRefill.Count >= NumberOfSlots/3)
+            {
+                // wyslij do serwera prośbe o uzupełnienie
+                RefillMissingProducts();
+            }
             IsWorking = RandomBreakChance();   
         }
 
@@ -96,7 +124,8 @@ namespace wsb
 
         public void EmptyTransactionChache()
         {
-
+            //wysylanie listy transakcji do serwera oraz usuwanie cache
+            transactionList.Clear();
         }
         
 
