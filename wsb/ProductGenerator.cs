@@ -12,16 +12,16 @@ namespace wsb
         public static string[] barTastes = { "Czekoladowy", "Kokosowy", "Waniliowy", "Orzechowy" };
         public static string[] snackTastes = { "Solone", "Paprykowe", "Cebulowe", "Salsa" };
 
-        public static Product GetSnickers()
-        {
-            var snickers = new CandyBar();
-            snickers.Name = "Snickers";
-            snickers.Price = 2.50f;
-            snickers.Taste = "Klasyczny";
-            snickers.Code = "SnickersRegular";
+        //public static Product GetSnickers()
+        //{
+        //    var snickers = new CandyBar();
+        //    snickers.Name = "Snickers";
+        //    snickers.Price = 2.50f;
+        //    snickers.Taste = "Klasyczny";
+        //    snickers.Code = "SnickersRegular";
             
-            return snickers;
-        }
+        //    return snickers;
+        //}
 
         //public static Product GetCisowiankaStill()
         //{
@@ -65,15 +65,15 @@ namespace wsb
         public static VendingMachine Generate()
         {
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
-            int slotCount = rnd.Next(15, 45);
+            int slotCount = rnd.Next(15, 30);
             while ( slotCount % 3 != 0 )
-                slotCount = rnd.Next(15, 45);
+                slotCount = rnd.Next(15, 30);
 
             VendingMachine tmp = new VendingMachine(slotCount);
             tmp.Code = GenerateCode();
             tmp.Adress = streets[rnd.Next(0, streets.Length)] + " " + rnd.Next(1, 100);
             tmp.Type = (VendingMachineType)( rnd.Next(0, 3) );
-            tmp.SlotDepthness = rnd.Next(10, 60);
+            tmp.SlotDepthness = rnd.Next(10, 20);
 
             for ( int i = 0; i < slotCount / 3; i++ )
             {
@@ -83,11 +83,10 @@ namespace wsb
                 candy.Price = (float)Math.Round(candy.Price, 2);
                 candy.Taste = barTastes[rnd.Next(0, barTastes.Length)];
                 candy.Code = GenerateCode();
+                candy.Count = tmp.SlotDepthness;
 
-                for ( int j = 0; j < tmp.SlotDepthness; j++ )
-                {
-                    tmp.Slots[i].Push(candy);
-                }
+                tmp.Slots.Add(candy);
+
                 
             }
 
@@ -100,11 +99,9 @@ namespace wsb
                 snack.Taste = snackTastes[rnd.Next(0, snackTastes.Length)];
                 snack.SnackType = (SnackType)rnd.Next(0, 3);
                 snack.Code = GenerateCode();
+                snack.Count = tmp.SlotDepthness;
 
-                for ( int j = 0; j < tmp.SlotDepthness; j++ )
-                {
-                    tmp.Slots[i].Push(snack);
-                }
+                tmp.Slots.Add(snack);
             }
 
             for ( int i = ( slotCount / 3 ) * 2; i < slotCount; i++ )
@@ -115,11 +112,9 @@ namespace wsb
                 drink.Price = (float)Math.Round(drink.Price, 2);
                 drink.DrinkType = (DrinkType)rnd.Next(0, 4);
                 drink.Code = GenerateCode();
+                drink.Count = tmp.SlotDepthness;
 
-                for ( int j = 0; j < tmp.SlotDepthness; j++ )
-                {
-                    tmp.Slots[i].Push(drink);
-                }
+                tmp.Slots.Add(drink);
             }
 
             return tmp;

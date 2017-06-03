@@ -21,7 +21,7 @@ namespace wsb
         public int SlotDepthness { get; set; }
         public bool IsWorking { get; set; } = true;
 
-        public Stack<Product>[] Slots { get; set; }
+        public List<Product> Slots { get; set; }
         public List<Transaction> transactionList;
 
         public VendingMachine()
@@ -42,31 +42,10 @@ namespace wsb
 
         private void InitializeSlots()
         {
-            this.Slots = new Stack<Product>[this.NumberOfSlots];
-            for ( int i = 0; i < NumberOfSlots; i++ )
-            {
-                Stack<Product> slot = new Stack<Product>();
-                this.Slots[i] = slot;
-            }
-
+            this.Slots = new List<Product>();
             transactionList = new List<Transaction>();
         }
 
-        public void FillSlotWithProductToFull(int slotNumber, Product product)
-        {
-            for ( int i = 0; i < this.SlotDepthness; i++ )
-            {
-                this.Slots[slotNumber].Push(product);
-            }
-        }
-
-        public void FillSlotWithCustomNumberOfProduct(int slotNumber, Product product, int productCount)
-        {
-            for ( int i = 0; i < productCount; i++ )
-            {
-                this.Slots[slotNumber].Push(product);
-            }
-        }
 
         public void BuyProduct(int productCode)
         {
@@ -74,9 +53,9 @@ namespace wsb
             {
                 if ( Slots[productCode].Count != 0 )
                 {
-                    Console.WriteLine("Zakupiono " + Slots[productCode].Peek().Name + " za " + Slots[productCode].Peek().Price + " zł" + " Zostało " + (Slots[productCode].Count-1) + "/" + SlotDepthness);
+                    Console.WriteLine("Zakupiono " + Slots[productCode].Name + " za " + Slots[productCode].Price + " zł" + " Zostało " + (Slots[productCode].Count-1) + "/" + SlotDepthness + " Automat na ulicy: " + Adress);
 
-                    Slots[productCode].Pop();
+                    Slots[productCode].Count--;
                     transactionList.Add(new Transaction(productCode, DateTime.Now));
                 }
 
